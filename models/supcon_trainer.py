@@ -1,8 +1,8 @@
 """Module with Multi-Label Supervised Contrastive Learning"""
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from .classifiers import Vision_Encoder
 from .utils import load_model
 

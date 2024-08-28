@@ -3,30 +3,28 @@ imaged using stimulated Raman histology. This is the main script for training an
 validating models.
 """
 
-import datetime
-from typing import TextIO
-import json
-import yaml
 import argparse
+import datetime
+import json
+from typing import TextIO
+
 import numpy as np
 import pandas as pd
-from sklearn.utils.class_weight import compute_class_weight
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+import yaml
+from sklearn.utils.class_weight import compute_class_weight
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+from datasets.data_utils import (get_glioma_data, get_labels, image_transforms,
+                                 label_frequency, oversample_label,
+                                 train_validation_split)
 # import dataset
 from datasets.deepglioma_dataset import DeepGlioma_Dataset
-from datasets.data_utils import train_validation_split, label_frequency, oversample_label
-from datasets.data_utils import image_transforms, get_glioma_data, get_labels
-
 # import models
 from models.classifiers import Linear_Classifier, Tran_Classifier
 from models.utils import get_embedding_weights, save_model
-
 # training modules
 from runners import run_epoch
 from utils.evaluate import compute_metrics, print_results
@@ -43,7 +41,10 @@ def parse_args() -> TextIO:
                         help='config file for training')
     args = parser.parse_args()
     return args.config
+
+
 cf_fd = parse_args()
+
 
 def main():
     cmd_input: TextIO = parse_args()
@@ -51,10 +52,12 @@ def main():
         return json.load(cf_fd)
     elif cmd_input.name.endswith(".yaml") or cf_fd.name.endswith(".yml"):
         return yaml.load(cf_fd, Loader=yaml.FullLoader)
+
+
 config_dict = main()
 
 
-#### DATA PREP #################################################################
+# DATA PREP #################################################################
 # load the training data
 labels = config_dict['data']['labels']
 
@@ -67,7 +70,7 @@ for center in config_dict['data']['train_centers']:
         ignore_index=True)
     gen_labels = gen_labels.append(pd.read_excel(
         config_dict['data']['data_spreadsheet'], sheet_name=f'{center}_data'),
-                                   ignore_index=True)
+        ignore_index=True)
 gen_labels = get_labels(gen_labels, labels)
 print(gen_labels)
 
@@ -86,7 +89,7 @@ if config_dict['validation']['val_type'] == 'random':
     validation_cases = gen_labels.groupby("idh").sample(
         n=8, random_state=config_dict['validation']
         ['random_seed'])['dbcase'].tolist()
-if config_dict['validation']['val_type'] == None:
+if config_dict['validation']['val_type'] is None:
     validation_cases = []
 print(f'Validation cases: {sorted(validation_cases)}')
 
@@ -97,7 +100,7 @@ data = get_glioma_data(study_df=gen_series,
 train_data, val_data = train_validation_split(data, validation_cases)
 
 # balance the labels to improve training
-if len(labels) is 1:
+if len(labels) == 1:
     train_data = oversample_label(train_data,
                                   label_index=0,
                                   perc_majority_label=1)
@@ -126,7 +129,7 @@ if config_dict['training']['label_weights']:
 else:
     weights = None
 
-#### GET DATALOADERS ###########################################################
+# GET DATALOADERS ###########################################################
 # train dataloader
 train_dataset = DeepGlioma_Dataset(
     num_labels=len(labels),
@@ -153,7 +156,7 @@ valid_loader = DataLoader(val_dataset,
                           batch_size=config_dict['training']['batch_size'],
                           shuffle=False)
 
-#### LOAD MODELS ###############################################################
+# LOAD MODELS ###############################################################
 # All models currently using ResNet50
 classifier = config_dict['model']['classifier']
 if classifier == 'linear':
@@ -206,7 +209,7 @@ optimizer = torch.optim.AdamW(
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
     optimizer, T_max=config_dict['training']['n_epochs'])
 
-#### TRAIN MODELS ##############################################################
+# TRAIN MODELS ##############################################################
 # mark the time for saving results and models
 now = datetime.datetime.now()
 now = f'{str(now.day)}-{str(now.month)}-{str(now.year)}'
@@ -219,7 +222,7 @@ total_correct_tracker = {}
 total_correct_tracker[0] = 0
 for epoch in range(1, config_dict['training']['n_epochs'] + 1):
     print(f'======================== {epoch} ========================')
-    ################### Train ##################################################
+    # Train ##################################################
     all_preds, all_targs, all_masks, all_missing_masks, all_ids, train_loss, train_loss_unk = run_epoch(
         model,
         train_loader,
@@ -241,9 +244,9 @@ for epoch in range(1, config_dict['training']['n_epochs'] + 1):
         missing_values=config_dict['training']['missing_values'])
     train_metrics[epoch] = train_metrics
     print(train_metrics)
-    if config_dict['validation']['val_type'] == None:
+    if config_dict['validation']['val_type'] is None:
         continue
-    ################### Validate ###############################################
+    # Validate ###############################################
     all_preds, all_targs, all_masks, all_missing_masks, all_ids, valid_loss, valid_loss_unk = run_epoch(
         model,
         valid_loader,

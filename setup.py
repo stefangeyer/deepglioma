@@ -9,7 +9,7 @@ setup(
         "pip>=22.0.0",
         "numpy",
         "pyyaml",
-        "pandas",
+        "pandas<2.0",
         "matplotlib",
         "tifffile",
         "scikit-learn",

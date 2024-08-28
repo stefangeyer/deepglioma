@@ -1,23 +1,20 @@
 """Module with Classifier models."""
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import torchvision.models as models
-from .utils import freeze_weights, load_model
-from vit_pytorch import ViT
-from vit_pytorch.deepvit import DeepViT
 
 from .encoder import Vision_Encoder
-from .transformer_layers import SelfAttnLayer
-from .utils import custom_replace, weights_init, freeze_weights
 from .position_enc import positionalencoding2d
+from .transformer_layers import SelfAttnLayer
+from .utils import custom_replace, freeze_weights, load_model, weights_init
 
 
 class Linear_Classifier(nn.Module):
     """Standard multilabel binary relevance model.
-	backbone can be 'resnet50', 'inception', 'resnext', 'vit_s', 'vit_b', 'vit_l'."""
+        backbone can be 'resnet50', 'inception', 'resnext', 'vit_s', 'vit_b', 'vit_l'."""
+
     def __init__(self,
                  num_labels: int = 3,
                  backbone: str = "resnet",

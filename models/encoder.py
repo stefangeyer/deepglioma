@@ -1,6 +1,5 @@
 """Module with Vision Encoder Model."""
 
-import torch
 import torch.nn as nn
 import torchvision.models as models
 from vit_pytorch import ViT
@@ -8,7 +7,8 @@ from vit_pytorch import ViT
 
 class Vision_Encoder(nn.Module):
     """Vision Encoder module for general feature extraction.
-	backbone can be 'resnet50', 'inception', 'resnext', 'vit_s', 'vit_b', 'vit_l'."""
+        backbone can be 'resnet50', 'inception', 'resnext', 'vit_s', 'vit_b', 'vit_l'."""
+
     def __init__(self,
                  backbone: str = "resnet",
                  pretrained: bool = True,

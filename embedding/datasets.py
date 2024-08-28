@@ -1,13 +1,10 @@
 """PyTorch datasets for embedding models."""
 
 from collections import Counter, defaultdict
-import numpy as np
-import matplotlib.pyplot as plt
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 from random import sample
+
+import numpy as np
+import torch
 
 
 class GliomaGloveDataset:
@@ -60,12 +57,11 @@ class GliomaGloveDataset:
         self._i_idx = list()
         self._j_idx = list()
         self._xij = list()
-        #Create indexes and x values tensors
+        # Create indexes and x values tensors
         for w, cnt in cooc_mat.items():
             for c, v in cnt.items():
                 self._i_idx.append(w)
                 self._j_idx.append(c)
-                self._xij.append(v)
 
         self.cooc_mat = cooc_mat
         self._i_idx = torch.LongTensor(self._i_idx)
@@ -73,7 +69,7 @@ class GliomaGloveDataset:
         self._xij = torch.FloatTensor(self._xij)
 
     def get_batches(self, batch_size: int) -> torch.Tensor:
-        #Generate random idx
+        # Generate random idx
         rand_ids = torch.LongTensor(
             np.random.choice(len(self._xij), len(self._xij), replace=False))
 

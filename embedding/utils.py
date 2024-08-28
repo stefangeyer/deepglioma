@@ -1,14 +1,11 @@
-import sys
-import os
-import numpy as np
-import pandas as pd
 from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import torch
 from sklearn.manifold import TSNE
 
 
-################ PLOTTING FUNCTION ##################
+# PLOTTING FUNCTION ##################
 def plot_embedding(model,
                    dataset,
                    model_type='glove',

@@ -1,5 +1,5 @@
-"""Module for training SRH vision encoder using weakly-supervised, patch-based, 
-multi-label contrastive learning, or patchcon. 
+"""Module for training SRH vision encoder using weakly-supervised, patch-based,
+multi-label contrastive learning, or patchcon.
 """
 
 import datetime
@@ -12,7 +12,6 @@ import pandas as pd
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 # import dataset
@@ -29,6 +28,8 @@ from models.utils import save_model
 from runners import run_epoch_patchcon
 
 # get config file
+
+
 def parse_args() -> TextIO:
     parser = argparse.ArgumentParser()
     parser.add_argument('-c',
@@ -38,7 +39,10 @@ def parse_args() -> TextIO:
                         help='config file for training')
     args = parser.parse_args()
     return args.config
+
+
 cf_fd = parse_args()
+
 
 def main():
     cmd_input: TextIO = parse_args()
@@ -46,10 +50,12 @@ def main():
         return json.load(cf_fd)
     elif cmd_input.name.endswith(".yaml") or cf_fd.name.endswith(".yml"):
         return yaml.load(cf_fd, Loader=yaml.FullLoader)
+
+
 config_dict = main()
 
 
-#### DATA PREP #################################################################
+# DATA PREP #################################################################
 # load the training data
 labels = config_dict['data']['labels']
 
@@ -62,13 +68,13 @@ for center in config_dict['data']['train_centers']:
         ignore_index=True)
     gen_labels = gen_labels.append(pd.read_excel(
         config_dict['data']['data_spreadsheet'], sheet_name=f'{center}_data'),
-                                   ignore_index=True)
+        ignore_index=True)
 gen_labels = get_labels(gen_labels, labels)
 
 # generate training dataset
 train_data = get_glioma_data(study_df=gen_series,
-                       labels_df=gen_labels,
-                       data_root_path=config_dict['data']['data_root'])
+                             labels_df=gen_labels,
+                             data_root_path=config_dict['data']['data_root'])
 
 # balance the labels to improve training
 if len(labels) == 1:
@@ -91,7 +97,7 @@ weights = torch.zeros(size=(1, len(label_weights)))
 for i, (label, weight) in enumerate(label_weights.items()):
     weights[:, i] = weight
 
-#### GET DATALOADERS ###########################################################
+# GET DATALOADERS ###########################################################
 # train dataloader
 train_dataset = DeepGlioma_Dataset(num_labels=len(labels),
                                    data=train_data,
@@ -101,19 +107,19 @@ train_dataset = DeepGlioma_Dataset(num_labels=len(labels),
                                        strength=config_dict['data']['transform_strength']),
                                    known_labels=0,
                                    testing=False)
-train_loader = DataLoader(train_dataset, 
-                        batch_size=config_dict['training']['batch_size'], 
-                        shuffle=True)
+train_loader = DataLoader(train_dataset,
+                          batch_size=config_dict['training']['batch_size'],
+                          shuffle=True)
 
-#### LOAD MODELS ###############################################################
+# LOAD MODELS ###############################################################
 # Instantiate the supervised contrastive trainer wrapper
 model = PatchConTrainer(num_labels=len(labels),
-                      backbone=config_dict['model']['vision_backbone'],
-                      input_size=config_dict['model']['input_size'],
-                      projector_dim=config_dict['model']['projector_dim'],
-                      pretrained=True,
-                      pretrained_vision_encoder=config_dict['model']
-                      ['pretrained_vision_model'])
+                        backbone=config_dict['model']['vision_backbone'],
+                        input_size=config_dict['model']['input_size'],
+                        projector_dim=config_dict['model']['projector_dim'],
+                        pretrained=True,
+                        pretrained_vision_encoder=config_dict['model']
+                        ['pretrained_vision_model'])
 # distribute model on GPUs
 if torch.cuda.device_count() > 1:
     print(f"Using {torch.cuda.device_count()} GPUs.")
@@ -125,12 +131,12 @@ optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad,
                                     model.parameters()),
                              lr=config_dict['training']['lr'])
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,
-                                    T_max=config_dict['training']['n_epochs'])
+                                                       T_max=config_dict['training']['n_epochs'])
 
 # instantiate loss function
 supcon_loss = SupConLoss(temperature=config_dict['training']['temp'])
 
-#### TRAIN MODELS ##############################################################
+# TRAIN MODELS ##############################################################
 now = datetime.datetime.now()
 now = f'{str(now.day)}-{str(now.month)}-{str(now.year)}'
 
@@ -138,7 +144,7 @@ now = f'{str(now.day)}-{str(now.month)}-{str(now.year)}'
 train_losses = {}
 for epoch in range(0, config_dict['training']['n_epochs'] + 1):
     print(f'======================== {epoch} ========================')
-    ################### Train ##################################################
+    # Train ##################################################
     loss_total, epoch_losses, all_image_ids = run_epoch_patchcon(
         model,
         train_loader,

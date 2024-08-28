@@ -16,6 +16,7 @@ from models import GliomaGene2VecModel, GliomaGloveModel
 from datasets import GliomaGloveDataset, GliomaGene2VectDataset
 from utils import binary_to_string, convert_df_to_dict, weight_func
 
+
 def wmse_loss(weights: torch.Tensor, inputs: torch.Tensor,
               targets: torch.Tensor) -> torch.Tensor:
     """Weighted mean sqaured error loss for GloVe model."""
@@ -23,6 +24,8 @@ def wmse_loss(weights: torch.Tensor, inputs: torch.Tensor,
     return torch.mean(loss)
 
 # get config file
+
+
 def parse_args() -> TextIO:
     parser = argparse.ArgumentParser()
     parser.add_argument('-c',
@@ -32,7 +35,10 @@ def parse_args() -> TextIO:
                         help='config file for training')
     args = parser.parse_args()
     return args.config
+
+
 cf_fd = parse_args()
+
 
 def main():
     cmd_input: TextIO = parse_args()
@@ -40,6 +46,8 @@ def main():
         return json.load(cf_fd)
     elif cmd_input.name.endswith(".yaml") or cf_fd.name.endswith(".yml"):
         return yaml.load(cf_fd, Loader=yaml.FullLoader)
+
+
 config_dict = main()
 
 # specify model type: glove or gene2vec
@@ -61,11 +69,11 @@ embedding_dict = convert_df_to_dict(embedding_df)
 if model_type == 'glove':
     dataset = GliomaGloveDataset(embedding_dict)
     model = GliomaGloveModel(vocab_size=dataset._vocab_len,
-                                embedding_dim=config_dict['model']['embedding_dim'])
+                             embedding_dim=config_dict['model']['embedding_dim'])
 else:
     dataset = GliomaGene2VectDataset(embedding_dict)
     model = GliomaGene2VecModel(vocab_size=dataset._vocab_len,
-                                 embedding_dim=config_dict['model']['embedding_dim'])
+                                embedding_dim=config_dict['model']['embedding_dim'])
 
 # run training
 optimizer = optim.Adam(model.parameters(), lr=config_dict['training']['lr'])
@@ -78,11 +86,11 @@ for e in range(1, config_dict['training']['n_epochs'] + 1):
             # forward pass
             optimizer.zero_grad()
             outputs = model(i_idx, j_idx)
-            weights_x = weight_func(x_ij, 
-                                    config_dict['training']['x_max'], 
+            weights_x = weight_func(x_ij,
+                                    config_dict['training']['x_max'],
                                     config_dict['training']['alpha'])
             loss = wmse_loss(weights_x, outputs, torch.log(x_ij))
-            
+
             # backward pass
             loss.backward()
             optimizer.step()
@@ -90,11 +98,11 @@ for e in range(1, config_dict['training']['n_epochs'] + 1):
 
     else:
         for context, target in dataset.get_batches(config_dict['training']['batch_size']):
-            
+
             # forward pass
             optimizer.zero_grad()
             loss = model(context, target)
-            
+
             # backward pass
             loss.backward()
             optimizer.step()
@@ -103,4 +111,4 @@ for e in range(1, config_dict['training']['n_epochs'] + 1):
     print(f"Epoch {e} >>> Loss: {np.mean(loss_values[-20:])}")
 print("Saving model...")
 torch.save(model.state_dict(),
-            f"glioma_{model_type}_embedding_model.pt")
+           f"glioma_{model_type}_embedding_model.pt")

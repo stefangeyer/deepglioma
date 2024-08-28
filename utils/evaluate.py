@@ -1,14 +1,14 @@
-import numpy as np
-import logging
-from collections import OrderedDict
-import torch
-import math
-from pdb import set_trace as stop
-import os
-from models.utils import custom_replace
-from utils.metrics import *
-import torch.nn.functional as F
 import warnings
+from collections import OrderedDict
+
+import numpy as np
+import torch
+from sklearn import metrics
+
+from models.utils import custom_replace
+from utils.metrics import (custom_mean_auc, custom_mean_avg_precision,
+                           example_f1_score, f1_score, hamming_loss,
+                           subset_accuracy)
 
 warnings.filterwarnings("ignore")
 
@@ -191,7 +191,7 @@ def compute_metrics(all_predictions,
 
 
 def print_results(labels, correct_dict, binary_pred_dict, label_dict):
-    
+
     # print and log aggregation statistics
     label_count = np.zeros(len(labels))
     label_correct = np.zeros(len(labels))

@@ -1,7 +1,8 @@
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 
 
 def get_embedding_weights(embedding_weights, mutations, gene_idx_dict):
@@ -55,7 +56,7 @@ def custom_mask_missing(tensor, missing_value=2):
 
 def init_weights(m):
     print('Xavier Init')
-    if type(m) == nn.Linear:
+    if type(m) is nn.Linear:
         torch.nn.init.xavier_uniform(m.weight)
         m.bias.data.fill_(0.01)
 

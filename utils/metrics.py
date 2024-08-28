@@ -1,17 +1,10 @@
-#!/usr/bin/env python3
 """Helper functions to compute all metrics needed"""
-import os
-import sys
-import numpy as np
-import logging
-from typing import List, Dict
-from collections import OrderedDict, defaultdict
+from typing import Dict, List
 
-from sklearn import metrics
-from threading import Lock
-import pandas as pd
+import numpy as np
 import torch
-import math
+from sklearn import metrics
+from collections import defaultdict
 
 
 def aggregate_predictions(all_ids: List,
@@ -33,9 +26,9 @@ def aggregate_predictions(all_ids: List,
 
     count_dict = defaultdict(int)
     for patch, pred, label, mask in results:
-        if prediction_level is 'patient':
+        if prediction_level == 'patient':
             key = patch.split('/')[1]
-        elif prediction_level is 'series':
+        elif prediction_level == 'series':
             key = patch.split('/')[1] + '/' + patch.split('/')[2]
 
         if key not in label_dict.keys():
@@ -93,7 +86,7 @@ def postprocess_features_tsne(all_ids: List,
         aggregation_dict['labels'].append(label.numpy())
         aggregation_dict['features'].append(features.numpy())
         aggregation_dict['correct'].append(correct)
-        aggregation_dict[f'label_idhnoncodel'].append(
+        aggregation_dict['label_idhnoncodel'].append(
             (label[0] * 1 - label[1]).numpy())
 
         for i in range(n_labels):
@@ -232,11 +225,11 @@ def f1_score(true_targets,
              average='micro',
              axis=0):
     """
-		average: str
-			'micro' or 'macro'
-		axis: 0 or 1
-			label axis
-	"""
+                average: str
+                        'micro' or 'macro'
+                axis: 0 or 1
+                        label axis
+        """
     if average not in set(['micro', 'macro']):
         raise ValueError("Specify micro or macro")
 
