@@ -1,0 +1,18 @@
+name: deepglioma
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - pip>=22.0.0
+  - numpy
+  - pyyaml
+  - pandas<2.0
+  - matplotlib
+  - tifffile
+  - scikit-learn
+  - scikit-image
+  - opencv
+  - pytorch>=1.11
+  - torchvision>=0.11.0
+  - pip:
+    - vit-pytorch
