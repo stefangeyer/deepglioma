@@ -1,8 +1,9 @@
 import os
+from typing import Dict
+
 import torch
-import numpy as np
 from torch.utils.data import Dataset
-from typing import List, Dict
+
 from datasets.data_utils import get_unk_mask_indices, image_loader
 
 

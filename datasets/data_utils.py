@@ -1,16 +1,13 @@
 import random
 import time
-from collections import Counter, OrderedDict, defaultdict
 from tifffile import imread
 import os
-from typing import List, Counter
-import torch
+from typing import List, Counter, Tuple
 from torchvision import transforms
-import random
 import pandas
 import numpy as np
-from typing import List, Tuple
 from PIL import ImageFile
+from collections import defaultdict
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -111,7 +108,7 @@ def convert_unk_labels(df: pandas.DataFrame, label: str):
 
 def train_validation_split(data: List, validation_cases: List) -> Tuple:
     """Function to split the data into training and validation cases
-	based on validation_cases list."""
+        based on validation_cases list."""
     val_data = []
     train_data = []
     for i in data:
@@ -134,8 +131,8 @@ def oversample_label(data: List,
                      label_index: int,
                      perc_majority_label: float = 1) -> List:
     """Function to better balance the data. perc_majority_label is what percentage
-	you wish to reach of the majority class. A value of 1 means the function will
-	oversample until the classes are balanced."""
+        you wish to reach of the majority class. A value of 1 means the function will
+        oversample until the classes are balanced."""
 
     neg_samples = []
     pos_samples = []
@@ -214,7 +211,7 @@ def image_transforms(image_size=300, strength='weak'):
                                              ratio=(1, 1),
                                              interpolation=2)
             ],
-                                   p=0.5),
+                p=0.5),
             transforms.RandomApply([transforms.GaussianBlur(5)], p=0.3),
             transforms.RandomAdjustSharpness(3, p=0.5),
             transforms.RandomVerticalFlip(p=0.5),
