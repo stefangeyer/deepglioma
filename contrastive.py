@@ -62,12 +62,13 @@ labels = config_dict['data']['labels']
 gen_series = pd.DataFrame()
 gen_labels = pd.DataFrame()
 for center in config_dict['data']['train_centers']:
-    gen_series = gen_series.append(
+    gen_series = pd.concat([
+        gen_series,
         pd.read_excel(config_dict['data']['data_spreadsheet'],
                       sheet_name=f'{center}_series'),
-        ignore_index=True)
-    gen_labels = gen_labels.append(pd.read_excel(
-        config_dict['data']['data_spreadsheet'], sheet_name=f'{center}_data'),
+        pd.read_excel(
+            config_dict['data']['data_spreadsheet'], sheet_name=f'{center}_data'),
+    ],
         ignore_index=True)
 gen_labels = get_labels(gen_labels, labels)
 
@@ -162,5 +163,6 @@ for epoch in range(0, config_dict['training']['n_epochs'] + 1):
         # save the Vision_Encoder model only
         save_model(
             model.module.vision_encoder,
-            f'{config_dict["model"]["vision_backbone"]}_{epoch}_{np.round(loss_total, decimals=2)}_{now}_con_model'
+            f'{config_dict["model"]["vision_backbone"]}_{epoch}_{
+                np.round(loss_total, decimals=2)}_{now}_con_model'
         )

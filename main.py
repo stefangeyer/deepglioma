@@ -64,12 +64,17 @@ labels = config_dict['data']['labels']
 gen_series = pd.DataFrame()
 gen_labels = pd.DataFrame()
 for center in config_dict['data']['train_centers']:
-    gen_series = gen_series.append(
-        pd.read_excel(config_dict['data']['data_spreadsheet'],
-                      sheet_name=f'{center}_series'),
-        ignore_index=True)
-    gen_labels = gen_labels.append(pd.read_excel(
-        config_dict['data']['data_spreadsheet'], sheet_name=f'{center}_data'),
+    gen_series = pd.concat([
+        gen_series,
+        pd.read_excel(
+            config_dict['data']['data_spreadsheet'],
+            sheet_name=f'{center}_series'
+        ),
+        pd.read_excel(
+            config_dict['data']['data_spreadsheet'],
+            sheet_name=f'{center}_data'
+        ),
+    ],
         ignore_index=True)
 gen_labels = get_labels(gen_labels, labels)
 print(gen_labels)
@@ -121,11 +126,11 @@ if config_dict['validation']['val_type'] is not None:
 # compute label weights matrix
 if config_dict['training']['label_weights']:
     weights = np.zeros(shape=(2, len(config_dict['data']['labels'])))
-    for l in range(len(labels)):
-        weights[:, l] = compute_class_weight(class_weight='balanced',
-                                             classes=np.unique(label_array[:,
-                                                                           l]),
-                                             y=label_array[:, l])
+    for label_index in range(len(labels)):
+        weights[:, label_index] = compute_class_weight(class_weight='balanced',
+                                                       classes=np.unique(label_array[:,
+                                                                                     label_index]),
+                                                       y=label_array[:, label_index])
 else:
     weights = None
 
@@ -295,16 +300,19 @@ for epoch in range(1, config_dict['training']['n_epochs'] + 1):
     print(f'Saving model for epoch {epoch}')
     save_model(
         model,
-        f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{config_dict["validation"]["val_type"]}_{epoch}_{np.round(total_correct, decimals=3)}_{now}_model',
+        f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{
+            config_dict["validation"]["val_type"]}_{epoch}_{np.round(total_correct, decimals=3)}_{now}_model',
         data_parallel=model_parallel)
     print(valid_epoch_metrics)
 
 # save validation data
 torch.save(
     val_predictions,
-    f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{config_dict["validation"]["val_type"]}_{now}_val_predictions.pt'
+    f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{
+        config_dict["validation"]["val_type"]}_{now}_val_predictions.pt'
 )
 torch.save(
     val_metrics,
-    f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{config_dict["validation"]["val_type"]}_{now}_metrics.pt'
+    f'{config_dict["model"]["vision_backbone"]}_{config_dict["model"]["classifier"]}_{
+        config_dict["validation"]["val_type"]}_{now}_metrics.pt'
 )

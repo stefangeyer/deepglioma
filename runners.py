@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from models.utils import custom_replace, custom_mask_missing
 import matplotlib.pyplot as plt
@@ -93,7 +92,7 @@ def run_epoch(model,
             label_weights = torch.tensor(label_weights).cuda()
             loss *= _batch_label_weights(labels.cuda(), label_weights)
 
-        if model_type is 'tran':
+        if model_type == 'tran':
             loss_out = (unk_mask.cuda() * missing_mask.cuda() * loss).sum()
         else:
             loss_out = (missing_mask.cuda() * loss).sum()
@@ -103,7 +102,7 @@ def run_epoch(model,
             optimizer.step()
             optimizer.zero_grad()
 
-        ## Updates ##
+        # Updates ##
         loss_total += loss_out.item()
         unk_loss_total += loss_out.item()
         start_idx, end_idx = (batch_idx * data.batch_size), ((batch_idx + 1) *
@@ -150,14 +149,14 @@ def run_epoch(model,
 
 # runner for patch contrastive learning
 def run_epoch_patchcon(model,
-                     data,
-                     supcon_loss,
-                     optimizer,
-                     scheduler=None,
-                     n_labels=3,
-                     label_weights=None,
-                     iterations=1000,
-                     train=True):
+                       data,
+                       supcon_loss,
+                       optimizer,
+                       scheduler=None,
+                       n_labels=3,
+                       label_weights=None,
+                       iterations=1000,
+                       train=True):
 
     if train:
         model.train()
