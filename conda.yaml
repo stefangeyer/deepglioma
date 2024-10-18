@@ -1,18 +1,17 @@
 name: deepglioma
 channels:
-  - defaults
   - conda-forge
 dependencies:
-  - pip>=22.0.0
+  - pip
   - numpy
   - pyyaml
-  - pandas<2.0
+  - pandas
   - matplotlib
   - tifffile
   - scikit-learn
   - scikit-image
   - opencv
-  - pytorch>=1.11
-  - torchvision>=0.11.0
+  - pytorch
+  - torchvision
   - pip:
     - vit-pytorch
