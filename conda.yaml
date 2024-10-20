@@ -2,7 +2,6 @@ name: deepglioma
 channels:
   - conda-forge
 dependencies:
-  - pip
   - numpy
   - pyyaml
   - pandas
@@ -13,5 +12,5 @@ dependencies:
   - opencv
   - pytorch
   - torchvision
-  - pip:
-    - vit-pytorch
+  - openpyxl
+  - vit-pytorch
